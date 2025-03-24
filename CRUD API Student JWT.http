@@ -1,0 +1,6 @@
+@CRUD_API_Student_JWT_HostAddress = http://localhost:5160
+
+GET {{CRUP_API_Student_JWT_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
