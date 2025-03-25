@@ -129,16 +129,17 @@ namespace CRUD_API_Student_JWT.Models
         public Student Create([FromBody] Student student)
         {
             SqlDBHelper dbHelper = new SqlDBHelper(__constr);
-            string query = @"INSERT INTO students (nim, name, email, prodi, date_of_birth) VALUES (@nim, @name, @email, @prodi, @dateOfBirth) RETURNING student_id";
+            string query = @"INSERT INTO students (nim, name, prodi, date_of_birth, email, password) VALUES (@nim, @name, @prodi, @dateOfBirth, @email, @password) RETURNING student_id";
             string insertRole = @"INSERT INTO student_roles (student_id, role_id) VALUES (@studentId, 2)";
             try
             {
                 NpgsqlCommand cmd = dbHelper.GetNpgsqlCommand(query);
                 cmd.Parameters.AddWithValue("@nim", student.nim);
                 cmd.Parameters.AddWithValue("@name", student.name);
-                cmd.Parameters.AddWithValue("@email", student.email);
                 cmd.Parameters.AddWithValue("@prodi", student.prodi);
                 cmd.Parameters.AddWithValue("@dateOfBirth", student.dateOfBirth);
+                cmd.Parameters.AddWithValue("@email", student.email);
+                cmd.Parameters.AddWithValue("@password", student.password);
                 var studentId = (int)cmd.ExecuteScalar();
                 student.student_id = studentId;
                 cmd.Dispose();
@@ -167,7 +168,7 @@ namespace CRUD_API_Student_JWT.Models
         {
             SqlDBHelper dbHelper = new SqlDBHelper(__constr);
             string query = @"UPDATE students 
-                     SET nim = @nim, name = @name, email = @email, prodi = @prodi, date_of_birth = @dateOfBirth 
+                     SET nim = @nim, name = @name, prodi = @prodi, date_of_birth = @dateOfBirth, email = @email, password = @password
                      WHERE student_id = @student_id 
                      RETURNING *";
 
@@ -176,9 +177,10 @@ namespace CRUD_API_Student_JWT.Models
                 NpgsqlCommand cmd = dbHelper.GetNpgsqlCommand(query);
                 cmd.Parameters.AddWithValue("@nim", student.nim);
                 cmd.Parameters.AddWithValue("@name", student.name);
-                cmd.Parameters.AddWithValue("@email", student.email);
                 cmd.Parameters.AddWithValue("@prodi", student.prodi);
                 cmd.Parameters.AddWithValue("@dateOfBirth", student.dateOfBirth.ToDateTime(TimeOnly.MinValue)); 
+                cmd.Parameters.AddWithValue("@email", student.email);
+                cmd.Parameters.AddWithValue("@password", student.password);
                 cmd.Parameters.AddWithValue("@student_id", student_id);
 
                 NpgsqlDataReader reader = cmd.ExecuteReader();
@@ -191,9 +193,10 @@ namespace CRUD_API_Student_JWT.Models
                         student_id = reader.GetInt32(0),
                         nim = reader.GetString(1),
                         name = reader.GetString(2),
-                        email = reader.GetString(3),
-                        prodi = reader.GetString(4),
-                        dateOfBirth = DateOnly.FromDateTime(reader.GetDateTime(5))
+                        prodi = reader.GetString(3),
+                        dateOfBirth = DateOnly.FromDateTime(reader.GetDateTime(4)),
+                        email = reader.GetString(5),
+                        password = reader.GetString(6)
                     };
                 }
 
@@ -218,10 +221,17 @@ namespace CRUD_API_Student_JWT.Models
         public Student Delete(Student student)
         {
             SqlDBHelper dbHelper = new SqlDBHelper(__constr);
+            string deleteRole = "DELETE FROM student_roles WHERE student_id = @id";
             string query = "DELETE FROM students WHERE student_id = @id AND student_id != 1";
             try
             {
-                NpgsqlCommand cmd = dbHelper.GetNpgsqlCommand(query);
+                NpgsqlCommand cmd = dbHelper.GetNpgsqlCommand(deleteRole);
+                cmd.Parameters.AddWithValue("@id", student.student_id);
+                cmd.ExecuteNonQuery();
+                cmd.Dispose();
+                dbHelper.CloseConnection();
+
+                cmd = dbHelper.GetNpgsqlCommand(query);
                 cmd.Parameters.AddWithValue("@id", student.student_id);
                 cmd.ExecuteNonQuery();
                 cmd.Dispose();

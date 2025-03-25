@@ -25,40 +25,6 @@ namespace CRUD_API_Student_JWT.Controllers
             __constr = _config.GetConnectionString("WebApiDatabase");
         }
 
-
-        //[HttpPost("register")]
-        //public IActionResult Register([FromBody] Person registerData)
-        //{
-            
-        //    if (string.IsNullOrEmpty(registerData.Email) || string.IsNullOrEmpty(registerData.Password))
-        //    {
-        //        return BadRequest(new { message = "Email dan password harus diisi" });
-        //    }
-
-        //    PersonContext context = new PersonContext(__constr);
-
-           
-        //    Person existingPerson = context.GetPersonByEmail(registerData.Email);
-        //    if (existingPerson != null)
-        //    {
-        //        return BadRequest(new { message = "Email sudah terdaftar" });
-        //    }
-
-            
-        //    bool isRegistered = context.(registerData);
-
-        //    if (isRegistered)
-        //    {
-        //        return Ok(new { message = "Registrasi berhasil" });
-        //    }
-        //    else
-        //    {
-        //        return StatusCode(500, new { message = "Registrasi gagal" });
-        //    }
-        //}
-
-
-
         [HttpPost("login")]
         public IActionResult Login([FromBody] Login loginData)
         {
