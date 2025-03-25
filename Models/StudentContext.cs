@@ -6,18 +6,62 @@ namespace CRUD_API_Student_JWT.Models
 {
     public class StudentContext
     {
-        private string constr;
+        private string __constr;
 
         public StudentContext(string constr)
         {
-            this.constr = constr;
+            __constr = constr;
         }
+
+        public Student GetAdminStudent(string email, string password)
+        {
+            Student student = null;
+            string query = string.Format("""
+                SELECT s.student_id, s.nim, s.name, s.prodi, s.date_of_birth, s.email, s.password
+                FROM students s
+                JOIN student_roles sr ON (s.student_id = sr.student_id)
+                JOIN roles r ON (r.role_id = sr.role_id)
+                WHERE r.role_name = 'admin' AND s.email = @email AND s.password = @password
+                """);
+            SqlDBHelper db = new SqlDBHelper(this.__constr);
+            try
+            {
+                NpgsqlCommand cmd = db.GetNpgsqlCommand(query);
+                cmd.Parameters.AddWithValue("@email", email);
+                cmd.Parameters.AddWithValue("@password", password);
+                NpgsqlDataReader reader = cmd.ExecuteReader();
+
+                if (reader.Read())
+                {
+                    student = new Student()
+                    {
+                        student_id = int.Parse(reader["student_id"].ToString()),
+                        nim = reader["nim"].ToString(),
+                        name = reader["name"].ToString(),
+                        prodi = reader["prodi"].ToString(),
+                        dateOfBirth = DateOnly.FromDateTime(reader.GetDateTime(4)),
+                        email = reader["email"].ToString(),
+                        password = reader["password"].ToString()
+                    };
+                    cmd.Dispose();
+                    db.CloseConnection();
+                };
+            } 
+            catch (Exception e)
+            {
+                db.CloseConnection();
+                throw new Exception(e.Message);
+            }
+            return student;
+     
+        }
+
 
         public List<Student> FindAll()
         {
             List<Student> students = new List<Student>();
-            SqlDBHelper dbHelper = new SqlDBHelper(constr);
-            string query = "SELECT * FROM students";
+            SqlDBHelper dbHelper = new SqlDBHelper(__constr);
+            string query = "SELECT student_id, nim, name, email, prodi, date_of_birth FROM students";
 
             try
             {
@@ -50,7 +94,7 @@ namespace CRUD_API_Student_JWT.Models
 
         public Student FindById(int student_id)
         {
-            SqlDBHelper dbHelper = new SqlDBHelper(constr);
+            SqlDBHelper dbHelper = new SqlDBHelper(__constr);
             string query = "SELECT student_id, nim, name, email, prodi, date_of_birth FROM students WHERE student_id = @id";
             try
             {
@@ -84,8 +128,9 @@ namespace CRUD_API_Student_JWT.Models
 
         public Student Create([FromBody] Student student)
         {
-            SqlDBHelper dbHelper = new SqlDBHelper(constr);
-            string query = "INSERT INTO students (nim, name, email, prodi, date_of_birth) VALUES (@nim, @name, @email, @prodi, @dateOfBirth) RETURNING student_id";
+            SqlDBHelper dbHelper = new SqlDBHelper(__constr);
+            string query = @"INSERT INTO students (nim, name, email, prodi, date_of_birth) VALUES (@nim, @name, @email, @prodi, @dateOfBirth) RETURNING student_id";
+            string insertRole = @"INSERT INTO student_roles (student_id, role_id) VALUES (@studentId, 2)";
             try
             {
                 NpgsqlCommand cmd = dbHelper.GetNpgsqlCommand(query);
@@ -94,7 +139,14 @@ namespace CRUD_API_Student_JWT.Models
                 cmd.Parameters.AddWithValue("@email", student.email);
                 cmd.Parameters.AddWithValue("@prodi", student.prodi);
                 cmd.Parameters.AddWithValue("@dateOfBirth", student.dateOfBirth);
-                var result = cmd.ExecuteScalar();
+                var studentId = (int)cmd.ExecuteScalar();
+                student.student_id = studentId;
+                cmd.Dispose();
+                dbHelper.CloseConnection();
+
+                cmd = dbHelper.GetNpgsqlCommand(insertRole);
+                cmd.Parameters.AddWithValue("@studentId", studentId);
+                var result = cmd.ExecuteNonQuery();
                 if (result != null)
                 {
                     student.student_id = (int)result;
@@ -113,7 +165,7 @@ namespace CRUD_API_Student_JWT.Models
 
         public Student Update(int student_id, [FromBody] Student student)
         {
-            SqlDBHelper dbHelper = new SqlDBHelper(constr);
+            SqlDBHelper dbHelper = new SqlDBHelper(__constr);
             string query = @"UPDATE students 
                      SET nim = @nim, name = @name, email = @email, prodi = @prodi, date_of_birth = @dateOfBirth 
                      WHERE student_id = @student_id 
@@ -165,8 +217,8 @@ namespace CRUD_API_Student_JWT.Models
 
         public Student Delete(Student student)
         {
-            SqlDBHelper dbHelper = new SqlDBHelper(constr);
-            string query = "DELETE FROM students WHERE student_id = @id";
+            SqlDBHelper dbHelper = new SqlDBHelper(__constr);
+            string query = "DELETE FROM students WHERE student_id = @id AND student_id != 1";
             try
             {
                 NpgsqlCommand cmd = dbHelper.GetNpgsqlCommand(query);

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Npgsql;
 using CRUD_API_Student_JWT.Helpers;
 using CRUD_API_Student_JWT.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Student_CRUD.Controllers
 {
@@ -40,7 +41,7 @@ namespace Student_CRUD.Controllers
             return Ok(student);
         }
 
-        [HttpPost("create")]
+        [HttpPost("create"), Authorize]
         public ActionResult<Student> Create([FromBody] Student student)
         {
             if (student == null)
@@ -53,7 +54,7 @@ namespace Student_CRUD.Controllers
             return Ok(createdStudent);
         }
 
-        [HttpPut("update/{student_id}")]
+        [HttpPut("update/{student_id}"), Authorize]
         public ActionResult<Student> Update(int student_id, [FromBody] Student student)
         {
 
@@ -75,7 +76,7 @@ namespace Student_CRUD.Controllers
             return Ok(updatedStudent);
         }
 
-        [HttpDelete("delete/{student_id}")]
+        [HttpDelete("delete/{student_id}"), Authorize]
         public ActionResult Delete(int student_id)
         {
             if (student_id <= 0)

@@ -22,7 +22,7 @@ namespace CRUD_API_Student_JWT.Controllers
         public AuthController(IConfiguration config)
         {
             _config = config;
-            __constr = _config.GetConnectionString("koneksi");
+            __constr = _config.GetConnectionString("WebApiDatabase");
         }
 
 
@@ -62,25 +62,25 @@ namespace CRUD_API_Student_JWT.Controllers
         [HttpPost("login")]
         public IActionResult Login([FromBody] Login loginData)
         {
-            PersonContext context = new PersonContext(__constr);
-            Person person = context.GetPersonByEmail(loginData.Email);
+            StudentContext context = new StudentContext(__constr);
+            Student student = context.GetAdminStudent(loginData.email, loginData.password);
 
-            if (person == null || person.Password != loginData.Password)
+            if (student == null || student.password != loginData.password)
             {
                 return Unauthorized(new { message = "Email atau password salah" });
             }
 
             JwtHelper jwtHelper = new JwtHelper(_config);
-            var token = jwtHelper.GenerateToken(person);
+            var token = jwtHelper.GenerateToken(student);
 
             return Ok(new
             {
                 token = token,
-                person = new
+                admin = new
                 {
-                    id = person.Id_person,
-                    name = person.Nama,
-                    email = person.Email
+                    id = student.student_id,
+                    name = student.name,
+                    email = student.email,
                 }
             });
         }

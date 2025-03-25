@@ -83,35 +83,35 @@ namespace CRUD_API_Student_JWT.Models
             return person;
         }
 
-        //public bool RegisterPerson(Person person)
-        //{
-        //    bool result = false;
-        //    string query = string.Format(@"INSERT INTO person (nama, alamat, email, password) 
-        //                          VALUES (@nama, @alamat, @email, @password)");
-        //    SqlDBHelper db = new SqlDBHelper(this.__constr);
+        public bool RegisterPerson(Person person)
+        {
+            bool result = false;
+            string query = string.Format(@"INSERT INTO person (nama, alamat, email, password) 
+                                  VALUES (@nama, @alamat, @email, @password)");
+            SqlDBHelper db = new SqlDBHelper(this.__constr);
 
-        //    try
-        //    {
-        //        NpgsqlCommand cmd = db.GetNpgsqlCommand(query);
-        //        cmd.Parameters.AddWithValue("@nama", person.Nama);
-        //        cmd.Parameters.AddWithValue("@alamat", person.Alamat);
-        //        cmd.Parameters.AddWithValue("@email", person.Email);
-        //        cmd.Parameters.AddWithValue("@password", person.Password);
+            try
+            {
+                NpgsqlCommand cmd = db.GetNpgsqlCommand(query);
+                cmd.Parameters.AddWithValue("@nama", person.Nama);
+                cmd.Parameters.AddWithValue("@alamat", person.Alamat);
+                cmd.Parameters.AddWithValue("@email", person.Email);
+                cmd.Parameters.AddWithValue("@password", person.Password);
 
-        //        int rowsAffected = cmd.ExecuteNonQuery();
-        //        result = rowsAffected > 0;
+                int rowsAffected = cmd.ExecuteNonQuery();
+                result = rowsAffected > 0;
 
-        //        cmd.Dispose();
-        //        db.CloseConnection();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        __errorMsqg = ex.Message;
-        //        Console.WriteLine("Error in RegisterPerson: " + ex.Message);
-        //    }
+                cmd.Dispose();
+                db.CloseConnection();
+            }
+            catch (Exception ex)
+            {
+                __errorMsqg = ex.Message;
+                Console.WriteLine("Error in RegisterPerson: " + ex.Message);
+            }
 
-        //    return result;
-        //}
+            return result;
+        }
 
     }
 }
