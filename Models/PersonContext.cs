@@ -52,7 +52,7 @@ namespace CRUD_API_Student_JWT.Models
         {
             Person person = null;
 
-            string query = string.Format(@"SELECT * FROM person WHERE email = @email");
+            string query = string.Format(@"SELECT * FROM person p JOIN peran_person pp ON p.id_person = pp.id_person JOIN peran pr ON pp.id_peran = pr.id_peran WHERE pr.nama_peran = 'admin'");
             SqlDBHelper db = new SqlDBHelper(this.__constr);
 
             try

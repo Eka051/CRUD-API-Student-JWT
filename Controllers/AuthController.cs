@@ -28,25 +28,25 @@ namespace CRUD_API_Student_JWT.Controllers
         [HttpPost("login")]
         public IActionResult Login([FromBody] Login loginData)
         {
-            StudentContext context = new StudentContext(__constr);
-            Student student = context.GetAdminStudent(loginData.email, loginData.password);
+            PersonContext context = new PersonContext(__constr);
+            Person person = context.GetPersonByEmail(loginData.email);
 
-            if (student == null || student.password != loginData.password)
+            if (person == null || person.Password != loginData.password)
             {
-                return Unauthorized(new { message = "Email atau password salah" });
+                return Unauthorized(new { message = "Hanya admin yang memiliki izin untuk login" });
             }
 
             JwtHelper jwtHelper = new JwtHelper(_config);
-            var token = jwtHelper.GenerateToken(student);
+            var token = jwtHelper.GenerateToken(person);
 
             return Ok(new
             {
                 token = token,
                 admin = new
                 {
-                    id = student.student_id,
-                    name = student.name,
-                    email = student.email,
+                    id = person.Id_person,
+                    name = person.Nama,
+                    email = person.Email,
                 }
             });
         }

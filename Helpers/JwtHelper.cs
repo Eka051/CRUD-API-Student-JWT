@@ -15,7 +15,7 @@ namespace CRUD_API_Student_JWT.Helper
             _configuration = configuration;
         }
 
-        public string GenerateToken(Student student)
+        public string GenerateToken(Person person)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
@@ -24,9 +24,9 @@ namespace CRUD_API_Student_JWT.Helper
                 Subject = new ClaimsIdentity(new[]
                 {
                     
-                    new Claim("Id_person", student.student_id.ToString()),
-                    new Claim(ClaimTypes.Email, student.email),
-                    new Claim(ClaimTypes.Name, student.name),
+                    new Claim("Id_person", person.Id_person.ToString()),
+                    new Claim(ClaimTypes.Email, person.Email),
+                    new Claim(ClaimTypes.Name, person.Nama),
                 }),
                 Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
